@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta http-equiv="Content-Style-Type" content="text/css">
+  <title></title>
+  <meta name="Generator" content="Cocoa HTML Writer">
+  <meta name="CocoaVersion" content="2685.4">
+  <style type="text/css">
+    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
+    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
+  </style>
+</head>
+<body>
+<p class="p1">&lt;!DOCTYPE html&gt;</p>
+<p class="p1">&lt;html lang="en"&gt;</p>
+<p class="p1">&lt;head&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta charset="UTF-8"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;title&gt;ProTrack AI | Sports Video Analyzer&lt;/title&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"&gt;&lt;/script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;style&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>:root { --primary: #00ff88; --bg: #121212; --card: #1e1e1e; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); color: white; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.container { max-width: 800px; width: 100%; background: var(--card); padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>h1 { color: var(--primary); margin-top: 0; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.input-group { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>input, button { padding: 12px; border-radius: 8px; border: none; font-size: 1rem; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>input { background: #333; color: white; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>button { background: var(--primary); color: #000; font-weight: bold; cursor: pointer; transition: 0.3s; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>button:hover { opacity: 0.8; transform: translateY(-2px); }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>#video-preview { width: 100%; border-radius: 10px; margin-top: 15px; background: #000; display: none;}</p>
+<p class="p1"><span class="Apple-converted-space">        </span>#log { margin-top: 20px; background: #111; padding: 15px; border-radius: 8px; max-height: 300px; overflow-y: auto; border-left: 4px solid var(--primary); }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.event { margin-bottom: 8px; font-family: monospace; }</p>
+<p class="p1"><span class="Apple-converted-space">        </span>.status { font-style: italic; color: #888; margin-top: 10px; }</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/style&gt;</p>
+<p class="p1">&lt;/head&gt;</p>
+<p class="p1">&lt;body&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;div class="container"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;h1&gt;⚽ ProTrack AI&lt;/h1&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;p&gt;Upload footage to track player on-field/off-field intervals.&lt;/p&gt;</p>
+<p class="p2"><span class="Apple-converted-space">    </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="input-group"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;input type="file" id="videoUpload" accept="video/*"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;input type="text" id="jerseyColor" placeholder="Jersey Color (e.g. red)"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p2"><span class="Apple-converted-space">    </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;button onclick="analyzeVideo()"&gt;ANALYZE FOOTAGE&lt;/button&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="status" class="status"&gt;Ready to analyze...&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;video id="video-preview" controls&gt;&lt;/video&gt;</p>
+<p class="p2"><span class="Apple-converted-space">    </span></p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;div id="log"&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;strong&gt;Activity Log:&lt;/strong&gt;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>&lt;div id="events"&gt;&lt;/div&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
+<p class="p1">&lt;/div&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;canvas id="calcCanvas" style="display:none;"&gt;&lt;/canvas&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;script&gt;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>let model;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const video = document.getElementById('video-preview');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const eventsDiv = document.getElementById('events');</p>
+<p class="p1"><span class="Apple-converted-space">    </span>const status = document.getElementById('status');</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>// Load the AI model on startup</p>
+<p class="p1"><span class="Apple-converted-space">    </span>async function loadModel() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>status.innerText = "Loading AI Vision Engine...";</p>
+<p class="p1"><span class="Apple-converted-space">        </span>model = await cocoSsd.load();</p>
+<p class="p1"><span class="Apple-converted-space">        </span>status.innerText = "AI Ready.";</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1"><span class="Apple-converted-space">    </span>loadModel();</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>async function analyzeVideo() {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const file = document.getElementById('videoUpload').files[0];</p>
+<p class="p1"><span class="Apple-converted-space">        </span>if (!file || !model) return alert("Please upload a video and wait for the model to load.");</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>video.src = URL.createObjectURL(file);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>video.style.display = "block";</p>
+<p class="p1"><span class="Apple-converted-space">        </span>status.innerText = "Analyzing frames... (This may take a moment)";</p>
+<p class="p1"><span class="Apple-converted-space">        </span>eventsDiv.innerHTML = "";</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">        </span>// Wait for video metadata to load</p>
+<p class="p1"><span class="Apple-converted-space">        </span>video.onloadeddata = async () =&gt; {</p>
+<p class="p1"><span class="Apple-converted-space">            </span>let isPlayerOnField = false;</p>
+<p class="p1"><span class="Apple-converted-space">            </span>const duration = video.duration;</p>
+<p class="p2"><span class="Apple-converted-space">            </span></p>
+<p class="p1"><span class="Apple-converted-space">            </span>// Sample every 2 seconds of the video</p>
+<p class="p1"><span class="Apple-converted-space">            </span>for (let i = 0; i &lt; duration; i += 2) {</p>
+<p class="p1"><span class="Apple-converted-space">                </span>video.currentTime = i;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>await new Promise(r =&gt; video.onseeked = r);</p>
+<p class="p2"><span class="Apple-converted-space">                </span></p>
+<p class="p1"><span class="Apple-converted-space">                </span>const predictions = await model.detect(video);</p>
+<p class="p1"><span class="Apple-converted-space">                </span>const foundPlayer = predictions.some(p =&gt; p.class === 'person');</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">                </span>// Logic: If person detected, assume entry/exit (simplified for MVP)</p>
+<p class="p1"><span class="Apple-converted-space">                </span>if (foundPlayer &amp;&amp; !isPlayerOnField) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>logEvent(`[${formatTime(i)}] Player Entered Field`);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>isPlayerOnField = true;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>} else if (!foundPlayer &amp;&amp; isPlayerOnField) {</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>logEvent(`[${formatTime(i)}] Player Exited Field`);</p>
+<p class="p1"><span class="Apple-converted-space">                    </span>isPlayerOnField = false;</p>
+<p class="p1"><span class="Apple-converted-space">                </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>}</p>
+<p class="p1"><span class="Apple-converted-space">            </span>status.innerText = "Analysis Complete.";</p>
+<p class="p1"><span class="Apple-converted-space">        </span>};</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function logEvent(msg) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const div = document.createElement('div');</p>
+<p class="p1"><span class="Apple-converted-space">        </span>div.className = 'event';</p>
+<p class="p1"><span class="Apple-converted-space">        </span>div.innerText = msg;</p>
+<p class="p1"><span class="Apple-converted-space">        </span>eventsDiv.appendChild(div);</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p2"><br></p>
+<p class="p1"><span class="Apple-converted-space">    </span>function formatTime(seconds) {</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const m = Math.floor(seconds / 60);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>const s = Math.floor(seconds % 60);</p>
+<p class="p1"><span class="Apple-converted-space">        </span>return `${m}:${s &lt; 10 ? '0' : ''}${s}`;</p>
+<p class="p1"><span class="Apple-converted-space">    </span>}</p>
+<p class="p1">&lt;/script&gt;</p>
+<p class="p2"><br></p>
+<p class="p1">&lt;/body&gt;</p>
+<p class="p1">&lt;/html&gt;</p>
+</body>
+</html>
